@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>To-Do + Dark Mode</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <div class="top">
+      <h1>📝 To-Do</h1>
+      <button class="toggle" id="toggleTheme">Toggle Dark</button>
+    </div>
+
+    <div class="row">
+      <input id="taskInput" type="text" placeholder="Add a new task… (press Enter)" />
+      <button class="add" id="addBtn">Add</button>
+    </div>
+
+    <div class="stats">
+      <div class="small"><span id="countAll">0</span> total</div>
+      <div class="small"><span id="countDone">0</span> done</div>
+    </div>
+
+    <ul id="list"></ul>
+    <div class="empty" id="empty">No tasks yet. Add one! 🚀</div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

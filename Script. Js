@@ -1,0 +1,108 @@
+// ----- helpers -----
+const $ = s => document.querySelector(s);
+const list = $("#list");
+const input = $("#taskInput");
+const empty = $("#empty");
+const countAll = $("#countAll");
+const countDone = $("#countDone");
+const addBtn = $("#addBtn");
+const toggleTheme = $("#toggleTheme");
+
+// persist theme + tasks
+const STATE_KEY = "todo_state_v1";
+const THEME_KEY = "todo_theme_v1";
+
+function saveState() {
+  const tasks = [...list.children].map(li => ({
+    text: li.querySelector(".text").textContent,
+    done: li.classList.contains("done")
+  }));
+  localStorage.setItem(STATE_KEY, JSON.stringify(tasks));
+}
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STATE_KEY);
+    if (!raw) return [];
+    return JSON.parse(raw);
+  } catch { return []; }
+}
+
+function renderEmpty() {
+  empty.style.display = list.children.length ? "none" : "block";
+}
+function updateCounts() {
+  const all = list.children.length;
+  const done = [...list.children].filter(li => li.classList.contains("done")).length;
+  countAll.textContent = all;
+  countDone.textContent = done;
+  renderEmpty();
+}
+
+function makeItem(text, done=false) {
+  const li = document.createElement("li");
+  li.innerHTML = `
+    <input type="checkbox" ${done ? "checked" : ""} />
+    <div class="text"></div>
+    <div class="small">
+      <button class="iconbtn edit">Edit</button>
+      <button class="iconbtn del">Delete</button>
+    </div>
+  `;
+  li.querySelector(".text").textContent = text;
+
+  const cb = li.querySelector('input[type="checkbox"]');
+  cb.addEventListener("change", () => { 
+    li.classList.toggle("done", cb.checked); 
+    updateCounts(); saveState();
+  });
+
+  li.querySelector(".del").addEventListener("click", () => {
+    li.remove(); updateCounts(); saveState();
+  });
+
+  li.querySelector(".edit").addEventListener("click", () => {
+    const current = li.querySelector(".text").textContent;
+    const next = prompt("Edit task:", current);
+    if (next !== null) {
+      li.querySelector(".text").textContent = next.trim() || current;
+      saveState();
+    }
+  });
+
+  li.classList.toggle("done", done);
+  return li;
+}
+
+function addTask() {
+  const text = input.value.trim();
+  if (!text) return;
+  list.prepend(makeItem(text));
+  input.value = "";
+  updateCounts(); saveState();
+}
+
+// events
+addBtn.addEventListener("click", addTask);
+input.addEventListener("keydown", e => { if (e.key === "Enter") addTask(); });
+
+// theme
+function applyTheme(mode) {
+  document.documentElement.classList.toggle("dark", mode === "dark");
+  localStorage.setItem(THEME_KEY, mode);
+}
+toggleTheme.addEventListener("click", () => {
+  const isDark = document.documentElement.classList.toggle("dark");
+  localStorage.setItem(THEME_KEY, isDark ? "dark" : "light");
+});
+
+// init
+(function init() {
+  // load tasks
+  loadState().forEach(t => list.appendChild(makeItem(t.text, t.done)));
+  // counts & empty state
+  updateCounts();
+
+  // restore theme
+  const savedTheme = localStorage.getItem(THEME_KEY) || "light";
+  applyTheme(savedTheme);
+})();
